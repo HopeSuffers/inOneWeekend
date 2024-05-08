@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <filesystem>
+#include <Magick++.h>
 #include "vec3.hpp"
 #include "color.hpp"
 
@@ -61,3 +62,4 @@ int main() {
 
     return 0;
 }
+
