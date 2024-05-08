@@ -1,10 +1,47 @@
+// Standard C++ library headers
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <filesystem>
+
+// Conditional system headers based on the OS
+#if defined(__APPLE__) || defined(__linux__)
+#include <cstdlib> // For system()
+#elif defined(_WIN32)
+#include <windows.h> // For ShellExecute()
+#endif
+
+// External library headers
 #include <Magick++.h>
+
+// Internal project-specific headers
 #include "vec3.hpp"
 #include "color.hpp"
+
+void ConvertImageAndDisplay(std::string ppmFileName)
+{
+    try {
+        Magick::Image testImage;
+        testImage.read((ppmFileName + ".ppm").c_str());
+        testImage.write((ppmFileName + ".png").c_str());
+
+        // Open the output file with the default application
+        std::string command;
+#if defined(__APPLE__)
+        command = "open " + ppmFileName + ".png";
+        system(command.c_str());
+#elif defined(__linux__)
+        command = "xdg-open " + ppmFileName + ".png";
+        system(command.c_str());
+#elif defined(_WIN32)
+        command = ppmFileName + ".png";
+        ShellExecute(NULL, "open", command.c_str(), NULL, NULL, SW_SHOWNORMAL);
+#endif
+    }
+    catch (const Magick::Exception &error_) {
+        std::cout << "Caught exception: " << error_.what() << std::endl;
+    }
+}
 
 void RenameFile(std::string ppmFileName) {
     try {
@@ -24,6 +61,8 @@ void RenameFile(std::string ppmFileName) {
         std::cerr << "Error: " << e.what() << std::endl;
         perror("System error");
     }
+
+    ConvertImageAndDisplay(ppmFileName);
 }
 
 void RenderTexture(int image_width, int image_height, std::ofstream &ppmFile) {
