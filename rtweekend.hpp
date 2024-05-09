@@ -13,9 +13,9 @@
 
 // Common Headers
 #include "interval.hpp"
-#include "vec3.hpp"
 #include "color.hpp"
 #include "ray.hpp"
+#include "vec3.hpp"
 
 // C++ Std Usings
 using std::make_shared;
