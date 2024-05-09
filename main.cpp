@@ -1,5 +1,5 @@
 // Standard C++ library headers
-
+#include <iostream>
 #include <fstream>
 #include <string>
 #include <filesystem>
@@ -22,15 +22,10 @@
 #include "hittable_list.hpp"
 #include "sphere.hpp"
 
-void SetupImage(int &image_width, int &image_height);
-
-void SetupCamera(int image_width, int image_height, vec3 &camera_center, vec3 &pixel_delta_u, vec3 &pixel_delta_v,
-                 vec3 &pixel00_loc);
-
 color ray_color(const ray &r, const hittable &world)
 {
     hit_record rec;
-    if (world.hit(r, 0, infinity, rec))
+    if (world.hit(r, interval(0, infinity), rec))
     {
         return 0.5 * (rec.normal + color(1, 1, 1));
     }
@@ -176,5 +171,4 @@ int main()
     RenameFile(ppmFileName);
 
     return 0;
-}
-
+};
