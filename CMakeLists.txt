@@ -5,7 +5,8 @@ project(inOneWeekend)
 set(CMAKE_CXX_STANDARD 23)
 
 # Executable
-add_executable(inOneWeekend main.cpp vec3.hpp color.hpp)
+add_executable(inOneWeekend main.cpp vec3.hpp color.hpp
+        ray.hpp)
 
 # ImageMagick definitions
 add_definitions(-DMAGICKCORE_QUANTUM_DEPTH=16)
