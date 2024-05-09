@@ -2,12 +2,12 @@
 #define COLOR_H
 
 #include "vec3.hpp"
-
-#include <iostream>
+#include "rtweekend.hpp"
 
 using color = vec3;
 
-void write_color(std::ostream& out, const color& pixel_color, std::ofstream &ppmFile) {
+void write_color(std::ostream &out, const color &pixel_color, std::ofstream &ppmFile)
+{
     auto r = pixel_color.x();
     auto g = pixel_color.y();
     auto b = pixel_color.z();
