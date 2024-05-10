@@ -1,4 +1,4 @@
-# Weekend to My Weekend RayTracer
+# Welcome to My Weekend RayTracer
 
 Welcome to my Weekend RayTracer project! This repository contains my implementation of the ray tracing algorithm as detailed in the fantastic resource, [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html) by [Peter Shirley](https://github.com/petershirley). This project serves both as a learning tool and a personal challenge to implement a robust ray tracing engine over a single weekend.
 
