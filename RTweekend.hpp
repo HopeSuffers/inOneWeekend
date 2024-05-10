@@ -19,29 +19,29 @@ using std::shared_ptr;
 using std::sqrt;
 
 // Utility Functions
-inline double degrees_to_radians(double degrees)
+inline double DegreesToRadians(double degrees)
 {
     return degrees * PI / 180.0;
 }
 
-inline double random_double()
+inline double RandomDouble()
 {
     static std::uniform_real_distribution<double> distribution(0.0, 1.0);
     static std::mt19937 generator;
     return distribution(generator);
 }
 
-inline double random_double(double min, double max)
+inline double RandomDouble(double min, double max)
 {
-    static std::mt19937 generator;  // Shared generator (optional to share)
+    static std::mt19937 generator;
     std::uniform_real_distribution<double> distribution(min, max);
     return distribution(generator);
 }
 
 // Common Headers
-#include "interval.hpp"
-#include "vec3.hpp"
-#include "color.hpp"
-#include "ray.hpp"
+#include "Interval.hpp"
+#include "Vec3.hpp"
+#include "Color.hpp"
+#include "Ray.hpp"
 
 #endif

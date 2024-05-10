@@ -5,15 +5,15 @@ project(inOneWeekend)
 set(CMAKE_CXX_STANDARD 23)
 
 # Executable
-add_executable(inOneWeekend main.cpp vec3.hpp color.hpp
-        ray.hpp
-        hittable.hpp
-        sphere.hpp
-        hittable_list.hpp
-        rtweekend.hpp
-        interval.hpp
-        camera.hpp
-        material.hpp
+add_executable(inOneWeekend main.cpp Vec3.hpp Color.hpp
+        Ray.hpp
+        HitTable.hpp
+        Sphere.hpp
+        HitTableList.hpp
+        RTweekend.hpp
+        Interval.hpp
+        Camera.hpp
+        Material.hpp
 )
 
 # ImageMagick definitions

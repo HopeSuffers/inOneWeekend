@@ -17,11 +17,17 @@
 #include <Magick++.h>
 
 // Internal project-specific headers
-#include "rtweekend.hpp"
-#include "camera.hpp"
-#include "hittable_list.hpp"
-#include "material.hpp"
-#include "sphere.hpp"
+#include "RTweekend.hpp"
+#include "Camera.hpp"
+#include "HitTableList.hpp"
+#include "Material.hpp"
+#include "Sphere.hpp"
+
+Camera SetupCamera();
+
+HitTableList SetupWorld();
+
+void SetupMaterials(HitTableList &world);
 
 void ConvertImageAndDisplay(std::string ppmFileName)
 {
@@ -77,34 +83,98 @@ void RenameFile(std::string ppmFileName)
 
 int main()
 {
-    // World
-    hittable_list world;
+    HitTableList world = SetupWorld();
 
-    auto material_ground = make_shared<lambertian>(color(0.8, 0.8, 0.0));
-    auto material_center = make_shared<lambertian>(color(0.1, 0.2, 0.5));
-    auto material_left   = make_shared<metal>(color(0.8, 0.8, 0.8), 0.0);
-    auto material_right  = make_shared<metal>(color(0.8, 0.6, 0.2), 1.0);
+    SetupMaterials(world);
 
-    world.add(make_shared<sphere>(point3( 0.0, -100.5, -1.0), 100.0, material_ground));
-    world.add(make_shared<sphere>(point3( 0.0,    0.0, -1.2),   0.5, material_center));
-    world.add(make_shared<sphere>(point3(-1.0,    0.0, -1.0),   0.5, material_left));
-    world.add(make_shared<sphere>(point3( 1.0,    0.0, -1.0),   0.5, material_right));
-
-    camera cam;
-    cam.aspect_ratio = 16.0 / 9.0;
-    cam.image_width = 400;
-    cam.samples_per_pixel = 100;
-    cam.max_depth = 50;
+    Camera cam = SetupCamera();
 
     std::ofstream ppmFile;
     std::string const ppmFileName = "../output/texture";
     ppmFile.open(ppmFileName + ".txt");
 
-    cam.render(world, ppmFile);
+    cam.Render(world, ppmFile);
 
     ppmFile.close();
     RenameFile(ppmFileName);
     ConvertImageAndDisplay(ppmFileName);
 
     return 0;
+}
+
+void SetupMaterials(HitTableList &world)
+{
+    auto material1 = std::__1::make_shared<Dielectric>(1.5);
+    world.Add(std::__1::make_shared<Sphere>(Point3(0, 1, 0), 1.0, material1));
+
+    auto material2 = std::__1::make_shared<Lambertian>(Color(0.4, 0.2, 0.1));
+    world.Add(std::__1::make_shared<Sphere>(Point3(-4, 1, 0), 1.0, material2));
+
+    auto material3 = std::__1::make_shared<Metal>(Color(0.7, 0.6, 0.5), 0.0);
+    world.Add(std::__1::make_shared<Sphere>(Point3(4, 1, 0), 1.0, material3));
+}
+
+HitTableList SetupWorld()
+{
+    // World
+    HitTableList world;
+
+    auto groundMaterial = std::__1::make_shared<Lambertian>(Color(0.5, 0.5, 0.5));
+    world.Add(std::__1::make_shared<Sphere>(Point3(0, -1000, 0), 1000, groundMaterial));
+
+    for (int a = -11; a < 11; a++)
+    {
+        for (int b = -11; b < 11; b++)
+        {
+            auto chooseMat = RandomDouble();
+            Point3 center(a + 0.9 * RandomDouble(), 0.2, b + 0.9 * RandomDouble());
+
+            if ((center - Point3(4, 0.2, 0)).Length() > 0.9)
+            {
+                std::__1::shared_ptr<Material> sphereMaterial;
+
+                if (chooseMat < 0.8)
+                {
+                    // diffuse
+                    auto albedo = Color::random() * Color::random();
+                    sphereMaterial = std::__1::make_shared<Lambertian>(albedo);
+                    world.Add(std::__1::make_shared<Sphere>(center, 0.2, sphereMaterial));
+                }
+                else if (chooseMat < 0.95)
+                {
+                    // Metal
+                    auto albedo = Color::random(0.5, 1);
+                    auto fuzz = RandomDouble(0, 0.5);
+                    sphereMaterial = std::__1::make_shared<Metal>(albedo, fuzz);
+                    world.Add(std::__1::make_shared<Sphere>(center, 0.2, sphereMaterial));
+                }
+                else
+                {
+                    // glass
+                    sphereMaterial = std::__1::make_shared<Dielectric>(1.5);
+                    world.Add(std::__1::make_shared<Sphere>(center, 0.2, sphereMaterial));
+                }
+            }
+        }
+    }
+    return world;
+}
+
+Camera SetupCamera()
+{
+    Camera cam;
+
+    cam.aspectRatio      = 16.0 / 9.0;
+    cam.imageWidth       = 1200;
+    cam.samplesPerPixel = 500;
+    cam.maxDepth         = 50;
+
+    cam.vFov     = 20;
+    cam.lookFrom = Point3(13, 2, 3);
+    cam.lookAt   = Point3(0, 0, 0);
+    cam.vUp      = Vec3(0, 1, 0);
+
+    cam.defocusAngle = 0.6;
+    cam.focusDist    = 10.0;
+    return cam;
 };
