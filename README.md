@@ -2,6 +2,8 @@
 
 Welcome to my Weekend RayTracer project! This repository contains my implementation of the ray tracing algorithm as detailed in the fantastic resource, [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html) by [Peter Shirley](https://github.com/petershirley). This project serves both as a learning tool and a personal challenge to implement a robust ray tracing engine over a single weekend.
 
+![WeekendRaytracer](https://github.com/HopeSuffers/inOneWeekend/assets/80710247/247d3543-6f83-4446-a6f1-d614faa970d4)
+
 ## About The Project
 
 Ray tracing is a rendering technique known for its stunning visual accuracy in simulating the interaction of light with surfaces. While typically compute-intensive, the approach outlined in Peter Shirley's guide simplifies the process, making it accessible for enthusiasts and budding programmers alike. This repository is my take on that simplified model, adapted and coded in C++.
