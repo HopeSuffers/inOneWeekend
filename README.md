@@ -35,4 +35,4 @@ Distributed under the CC0-1.0 License. See LICENSE for more information.
 
 Acknowledgements
 [Peter Shirley](https://github.com/petershirley) for creating the wonderful book that inspired this project.
-[RayTracer Github Account](https://github.com/RayTracing/raytracing.github.io/).
+[Github Account](https://github.com/RayTracing/raytracing.github.io/).
