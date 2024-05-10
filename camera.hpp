@@ -3,6 +3,7 @@
 
 #include "rtweekend.hpp"
 #include "hittable.hpp"
+#include "material.hpp"
 
 class camera
 {
@@ -107,8 +108,11 @@ private:
 
         if (world.hit(r, interval(0.001, RT_INFINITY), rec))
         {
-            vec3 direction = rec.normal + random_unit_vector();
-            return 0.1 * ray_color(ray(rec.p, direction), depth - 1, world);
+            ray scattered;
+            color attenuation;
+            if (rec.mat->scatter(r, rec, attenuation, scattered))
+                return attenuation * ray_color(scattered, depth-1, world);
+            return color(0,0,0);
         }
 
         vec3 unit_direction = unit_vector(r.direction());

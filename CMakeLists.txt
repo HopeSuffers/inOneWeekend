@@ -12,7 +12,9 @@ add_executable(inOneWeekend main.cpp vec3.hpp color.hpp
         hittable_list.hpp
         rtweekend.hpp
         interval.hpp
-        camera.hpp)
+        camera.hpp
+        material.hpp
+)
 
 # ImageMagick definitions
 add_definitions(-DMAGICKCORE_QUANTUM_DEPTH=16)
