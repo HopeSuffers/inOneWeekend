@@ -5,6 +5,11 @@
 #include "HitTable.hpp"
 #include "Material.hpp"
 
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <thread>
+
 class Camera
 {
 public:
@@ -21,16 +26,54 @@ public:
     double defocusAngle = 0;                        // Variation angle of rays through each pixel
     double focusDist = 10;                          // Distance from Camera lookFrom point to plane of perfect focus
 
+    std::vector<std::string> outputBuffer;
+    std::mutex outputMutex;
+
     void Render(const HitTable &world, std::ofstream &ppmFile)
     {
         Initialize();
-
         std::cout << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
         ppmFile << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
 
-        for (int j = 0; j < imageHeight; j++)
+        const int numThreads = std::thread::hardware_concurrency();
+        int rowsPerThread = imageHeight / numThreads;
+        std::vector<std::thread> threads;
+        int lastRow = 0; // Keep track of the last row assigned to ensure all rows are covered
+
+        for (int t = 0; t < numThreads; t++)
         {
-            std::clog << "\rScanlines remaining: " << (imageHeight - j) << ' ' << std::flush;
+            int startRow = t * rowsPerThread;
+            int endRow = (t + 1) * rowsPerThread;
+            if (t == numThreads - 1)
+            {
+                endRow = imageHeight; // Make sure the last thread covers all remaining rows
+            }
+
+            threads.emplace_back([=, &world, &ppmFile, this]() {
+                this->RenderSegment(world, ppmFile, startRow, endRow);
+            });
+            lastRow = endRow;
+        }
+
+        for (auto &thread: threads)
+        {
+            thread.join();
+        }
+
+        for (size_t i = 0; i < outputBuffer.size(); ++i)
+        {
+            ppmFile << outputBuffer[i];
+        }
+
+        std::clog << "\rDone.                 \n";
+    }
+
+    void RenderSegment(const HitTable &world, std::ofstream &ppmFile, int startRow, int endRow)
+    {
+        std::vector<std::string> localOutput; // Each thread builds its own output
+        for (int j = startRow; j < endRow; j++)
+        {
+            std::cout << "\rScanlines remaining: " << (j) << ' ' << std::endl;
             for (int i = 0; i < imageWidth; i++)
             {
                 Color pixelColor(0, 0, 0);
@@ -39,11 +82,13 @@ public:
                     Ray r = GetRay(i, j);
                     pixelColor += RayColor(r, maxDepth, world);
                 }
-                WriteColor(std::cout, pixelSamplesScale * pixelColor, ppmFile);
+
+                localOutput.push_back(WriteColor(pixelColor));
             }
         }
-
-        std::clog << "\rDone.                 \n";
+        // Critical section: safely append the local output to the shared output buffer
+        std::lock_guard<std::mutex> guard(outputMutex);
+        outputBuffer.insert(outputBuffer.end(), localOutput.begin(), localOutput.end());
     }
 
 private:

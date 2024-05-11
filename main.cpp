@@ -87,7 +87,20 @@ int main()
 
     SetupMaterials(world);
 
-    Camera cam = SetupCamera();
+    Camera cam;
+
+    cam.aspectRatio      = 16.0 / 9.0;
+    cam.imageWidth       = 1200;
+    cam.samplesPerPixel = 1;
+    cam.maxDepth         = 5;
+
+    cam.vFov     = 20;
+    cam.lookFrom = Point3(13, 2, 3);
+    cam.lookAt   = Point3(0, 0, 0);
+    cam.vUp      = Vec3(0, 1, 0);
+
+    cam.defocusAngle = 0.6;
+    cam.focusDist    = 10.0;
 
     std::ofstream ppmFile;
     std::string const ppmFileName = "../output/texture";
@@ -160,21 +173,21 @@ HitTableList SetupWorld()
     return world;
 }
 
-Camera SetupCamera()
-{
-    Camera cam;
-
-    cam.aspectRatio      = 16.0 / 9.0;
-    cam.imageWidth       = 1200;
-    cam.samplesPerPixel = 500;
-    cam.maxDepth         = 50;
-
-    cam.vFov     = 20;
-    cam.lookFrom = Point3(13, 2, 3);
-    cam.lookAt   = Point3(0, 0, 0);
-    cam.vUp      = Vec3(0, 1, 0);
-
-    cam.defocusAngle = 0.6;
-    cam.focusDist    = 10.0;
-    return cam;
-};
+//Camera& SetupCamera()
+//{
+//    Camera cam;
+//
+//    cam.aspectRatio      = 16.0 / 9.0;
+//    cam.imageWidth       = 1200;
+//    cam.samplesPerPixel = 1;
+//    cam.maxDepth         = 5;
+//
+//    cam.vFov     = 20;
+//    cam.lookFrom = Point3(13, 2, 3);
+//    cam.lookAt   = Point3(0, 0, 0);
+//    cam.vUp      = Vec3(0, 1, 0);
+//
+//    cam.defocusAngle = 0.6;
+//    cam.focusDist    = 10.0;
+//    return cam;
+//};

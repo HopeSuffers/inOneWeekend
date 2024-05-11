@@ -149,13 +149,11 @@ inline Vec3 RandomInUnitDisk() {
 
 inline Vec3 RandomInUnitSphere()
 {
-
     auto p = Vec3::random(-1, 1);
     if (p.LengthSquared() < 1)
     {
         return p;
     }
-
 }
 
 inline Vec3 RandomUnitVector()
