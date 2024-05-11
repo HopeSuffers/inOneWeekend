@@ -80,11 +80,14 @@ public:
         int totalRows = endRow - startRow;
         int logFrequency = totalRows / 10;  // Log progress every 10% of the segment processed
 
-        for (int j = startRow; j < endRow; j++) {
+        for (int j = startRow; j < endRow; j++)
+        {
             std::stringstream localOutput;
-            for (int i = 0; i < imageWidth; i++) {
+            for (int i = 0; i < imageWidth; i++)
+            {
                 Color pixelColor(0, 0, 0);
-                for (int sample = 0; sample < samplesPerPixel; sample++) {
+                for (int sample = 0; sample < samplesPerPixel; sample++)
+                {
                     Ray r = GetRay(i, j);
                     pixelColor += RayColor(r, maxDepth, world);
                 }
@@ -93,7 +96,8 @@ public:
             outputBuffer[j] = localOutput.str();
 
             // Log progress if needed
-            if ((j - startRow) % logFrequency == 0) {
+            if ((j - startRow) % logFrequency == 0)
+            {
                 std::lock_guard<std::mutex> guard(coutMutex);
                 std::cout << "Thread processing rows " << startRow << " to " << endRow
                           << ": Completed " << (j - startRow + 1) << " out of " << totalRows
