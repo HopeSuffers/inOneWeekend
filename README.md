@@ -2,7 +2,7 @@
 
 Welcome to my Weekend RayTracer project! This repository contains my implementation of the ray tracing algorithm as detailed in the fantastic resource, [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html) by [Peter Shirley](https://github.com/petershirley). This project serves both as a learning tool and a personal challenge to implement a robust ray tracing engine over a single weekend.
 
-![WeekendRaytracer](https://github.com/HopeSuffers/inOneWeekend/assets/80710247/247d3543-6f83-4446-a6f1-d614faa970d4)
+![texture](https://github.com/HopeSuffers/inOneWeekend/assets/80710247/56adf31d-69b2-43b6-896d-3498606acdc0)
 
 ## About The Project
 
