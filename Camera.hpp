@@ -26,69 +26,80 @@ public:
     double defocusAngle = 0;                        // Variation angle of rays through each pixel
     double focusDist = 10;                          // Distance from Camera lookFrom point to plane of perfect focus
 
-    std::vector<std::string> outputBuffer;
-    std::mutex outputMutex;
+    std::vector<std::string> outputBuffer;          // Buffer to store output strings for each row
+    std::mutex outputMutex;                         // Mutex to synchronize access to the output buffer
+    std::mutex coutMutex;                           // Mutex to synchronize console output for logging
 
+    // Renders the scene into the given output file
     void Render(const HitTable &world, std::ofstream &ppmFile)
     {
         Initialize();
         std::cout << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
         ppmFile << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
 
+        // Ensure buffer can hold one entry per row
+        outputBuffer.resize(imageHeight);
+
         const int numThreads = std::thread::hardware_concurrency();
         int rowsPerThread = imageHeight / numThreads;
         std::vector<std::thread> threads;
-        int lastRow = 0; // Keep track of the last row assigned to ensure all rows are covered
 
+        // Create and launch threads for concurrent rendering
         for (int t = 0; t < numThreads; t++)
         {
             int startRow = t * rowsPerThread;
             int endRow = (t + 1) * rowsPerThread;
             if (t == numThreads - 1)
             {
-                endRow = imageHeight; // Make sure the last thread covers all remaining rows
+                endRow = imageHeight;  // Ensure the last thread covers all remaining rows
             }
 
             threads.emplace_back([=, &world, &ppmFile, this]() {
                 this->RenderSegment(world, ppmFile, startRow, endRow);
             });
-            lastRow = endRow;
         }
 
+        // Wait for all threads to complete
         for (auto &thread: threads)
         {
             thread.join();
         }
 
-        for (size_t i = 0; i < outputBuffer.size(); ++i)
+        // Write the accumulated output to the file
+        for (const auto &line: outputBuffer)
         {
-            ppmFile << outputBuffer[i];
+            ppmFile << line;
         }
 
         std::clog << "\rDone.                 \n";
     }
 
+    // Renders a segment of the scene, processing rows from startRow to endRow
     void RenderSegment(const HitTable &world, std::ofstream &ppmFile, int startRow, int endRow)
     {
-        std::vector<std::string> localOutput; // Each thread builds its own output
-        for (int j = startRow; j < endRow; j++)
-        {
-            std::cout << "\rScanlines remaining: " << (j) << ' ' << std::endl;
-            for (int i = 0; i < imageWidth; i++)
-            {
+        int totalRows = endRow - startRow;
+        int logFrequency = totalRows / 10;  // Log progress every 10% of the segment processed
+
+        for (int j = startRow; j < endRow; j++) {
+            std::stringstream localOutput;
+            for (int i = 0; i < imageWidth; i++) {
                 Color pixelColor(0, 0, 0);
-                for (int sample = 0; sample < samplesPerPixel; sample++)
-                {
+                for (int sample = 0; sample < samplesPerPixel; sample++) {
                     Ray r = GetRay(i, j);
                     pixelColor += RayColor(r, maxDepth, world);
                 }
+                localOutput << WriteColor(pixelColor);
+            }
+            outputBuffer[j] = localOutput.str();
 
-                localOutput.push_back(WriteColor(pixelColor));
+            // Log progress if needed
+            if ((j - startRow) % logFrequency == 0) {
+                std::lock_guard<std::mutex> guard(coutMutex);
+                std::cout << "Thread processing rows " << startRow << " to " << endRow
+                          << ": Completed " << (j - startRow + 1) << " out of " << totalRows
+                          << " rows.\n";
             }
         }
-        // Critical section: safely append the local output to the shared output buffer
-        std::lock_guard<std::mutex> guard(outputMutex);
-        outputBuffer.insert(outputBuffer.end(), localOutput.begin(), localOutput.end());
     }
 
 private:
