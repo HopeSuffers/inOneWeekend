@@ -85,8 +85,8 @@ std::unique_ptr<Camera> SetupCamera()
 
     cam->aspectRatio = 16.0 / 9.0;
     cam->imageWidth = 1200;
-    cam->samplesPerPixel = 1;
-    cam->maxDepth = 5;
+    cam->samplesPerPixel = 100;
+    cam->maxDepth = 20;
 
     cam->vFov = 20;
     cam->lookFrom = Point3(13, 2, 3);

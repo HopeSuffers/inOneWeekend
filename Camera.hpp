@@ -5,10 +5,12 @@
 #include "HitTable.hpp"
 #include "Material.hpp"
 
-#include <fstream>
-#include <sstream>
-#include <string>
+#include <vector>
 #include <thread>
+#include <mutex>
+#include <sstream>
+#include <iostream>
+#include <fstream>
 
 class Camera
 {
@@ -30,6 +32,24 @@ public:
     std::mutex outputMutex;                         // Mutex to synchronize access to the output buffer
     std::mutex coutMutex;                           // Mutex to synchronize console output for logging
 
+    std::vector<std::string> colors = {
+            "\033[31m", // Red
+            "\033[32m", // Green
+            "\033[33m", // Yellow
+            "\033[34m", // Blue
+            "\033[35m", // Magenta
+            "\033[36m", // Cyan
+            "\033[37m", // White
+            "\033[90m", // Bright Black (Gray)
+            "\033[91m", // Bright Red
+            "\033[92m", // Bright Green
+            "\033[93m", // Bright Yellow
+            "\033[94m", // Bright Blue
+            "\033[95m", // Bright Magenta
+            "\033[96m", // Bright Cyan
+            "\033[97m"  // Bright White
+    };
+
     // Renders the scene into the given output file
     void Render(const HitTable &world, std::ofstream &ppmFile)
     {
@@ -37,14 +57,12 @@ public:
         std::cout << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
         ppmFile << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
 
-        // Ensure buffer can hold one entry per row
         outputBuffer.resize(imageHeight);
-
         const int numThreads = std::thread::hardware_concurrency();
-        int rowsPerThread = imageHeight / numThreads;
         std::vector<std::thread> threads;
 
-        // Create and launch threads for concurrent rendering
+        int rowsPerThread = imageHeight / numThreads;
+
         for (int t = 0; t < numThreads; t++)
         {
             int startRow = t * rowsPerThread;
@@ -54,18 +72,19 @@ public:
                 endRow = imageHeight;  // Ensure the last thread covers all remaining rows
             }
 
-            threads.emplace_back([=, &world, &ppmFile, this]() {
-                this->RenderSegment(world, ppmFile, startRow, endRow);
+            std::string threadColor = colors[t % colors.size()];
+            int threadNum = t;
+
+            threads.emplace_back([=, &world, &ppmFile]() {
+                this->RenderSegment(world, ppmFile, startRow, endRow, threadColor, threadNum);
             });
         }
 
-        // Wait for all threads to complete
         for (auto &thread: threads)
         {
             thread.join();
         }
 
-        // Write the accumulated output to the file
         for (const auto &line: outputBuffer)
         {
             ppmFile << line;
@@ -74,11 +93,12 @@ public:
         std::clog << "\rDone.                 \n";
     }
 
-    // Renders a segment of the scene, processing rows from startRow to endRow
-    void RenderSegment(const HitTable &world, std::ofstream &ppmFile, int startRow, int endRow)
+    void
+    RenderSegment(const HitTable &world, std::ofstream &ppmFile, int startRow, int endRow, const std::string &color,
+                  int threadNum)
     {
         int totalRows = endRow - startRow;
-        int logFrequency = totalRows / 10;  // Log progress every 10% of the segment processed
+        int logFrequency = totalRows / 10;  // Update progress every 10% of the segment processed
 
         for (int j = startRow; j < endRow; j++)
         {
@@ -91,17 +111,16 @@ public:
                     Ray r = GetRay(i, j);
                     pixelColor += RayColor(r, maxDepth, world);
                 }
-                localOutput << WriteColor(pixelColor);
+                localOutput << WriteColor(pixelSamplesScale * pixelColor);
             }
             outputBuffer[j] = localOutput.str();
 
-            // Log progress if needed
             if ((j - startRow) % logFrequency == 0)
             {
                 std::lock_guard<std::mutex> guard(coutMutex);
-                std::cout << "Thread processing rows " << startRow << " to " << endRow
+                std::cout << color << "Thread " << threadNum << " processing rows " << startRow << " to " << endRow
                           << ": Completed " << (j - startRow + 1) << " out of " << totalRows
-                          << " rows.\n";
+                          << " rows." << "\033[0m" << std::endl;
             }
         }
     }
