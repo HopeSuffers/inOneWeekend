@@ -23,8 +23,6 @@
 #include "Material.hpp"
 #include "Sphere.hpp"
 
-Camera SetupCamera();
-
 HitTableList SetupWorld();
 
 void SetupMaterials(HitTableList &world);
@@ -81,19 +79,39 @@ void RenameFile(std::string ppmFileName)
     }
 }
 
+std::unique_ptr<Camera> SetupCamera()
+{
+    auto cam = std::make_unique<Camera>();
+
+    cam->aspectRatio = 16.0 / 9.0;
+    cam->imageWidth = 1200;
+    cam->samplesPerPixel = 100;
+    cam->maxDepth = 20;
+
+    cam->vFov = 20;
+    cam->lookFrom = Point3(13, 2, 3);
+    cam->lookAt = Point3(0, 0, 0);
+    cam->vUp = Vec3(0, 1, 0);
+
+    cam->defocusAngle = 0.6;
+    cam->focusDist = 10.0;
+
+    return cam;
+}
+
 int main()
 {
     HitTableList world = SetupWorld();
 
     SetupMaterials(world);
 
-    Camera cam = SetupCamera();
+    auto cam = SetupCamera();
 
     std::ofstream ppmFile;
     std::string const ppmFileName = "../output/texture";
     ppmFile.open(ppmFileName + ".txt");
 
-    cam.Render(world, ppmFile);
+    cam->Render(world, ppmFile);
 
     ppmFile.close();
     RenameFile(ppmFileName);
@@ -159,22 +177,3 @@ HitTableList SetupWorld()
     }
     return world;
 }
-
-Camera SetupCamera()
-{
-    Camera cam;
-
-    cam.aspectRatio      = 16.0 / 9.0;
-    cam.imageWidth       = 1200;
-    cam.samplesPerPixel = 500;
-    cam.maxDepth         = 50;
-
-    cam.vFov     = 20;
-    cam.lookFrom = Point3(13, 2, 3);
-    cam.lookAt   = Point3(0, 0, 0);
-    cam.vUp      = Vec3(0, 1, 0);
-
-    cam.defocusAngle = 0.6;
-    cam.focusDist    = 10.0;
-    return cam;
-};
