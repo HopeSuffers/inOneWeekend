@@ -29,7 +29,6 @@ public:
     double focusDist = 10;                          // Distance from Camera lookFrom point to plane of perfect focus
 
     std::vector<std::string> outputBuffer;          // Buffer to store output strings for each row
-    std::mutex outputMutex;                         // Mutex to synchronize access to the output buffer
     std::mutex coutMutex;                           // Mutex to synchronize console output for logging
 
     std::vector<std::string> colors = {
@@ -75,9 +74,10 @@ public:
             std::string threadColor = colors[t % colors.size()];
             int threadNum = t;
 
-            threads.emplace_back([=, &world, &ppmFile]() {
-                this->RenderSegment(world, ppmFile, startRow, endRow, threadColor, threadNum);
-            });
+            threads.emplace_back([=, &world, &ppmFile]()
+                                 {
+                                     this->RenderSegment(world, ppmFile, startRow, endRow, threadColor, threadNum);
+                                 });
         }
 
         for (auto &thread: threads)
